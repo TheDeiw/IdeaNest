@@ -72,6 +72,13 @@ class LoginScreen extends StatelessWidget {
 
                 ElevatedButton(
                   onPressed: () {
+                    throw Exception();
+                  },
+                  child: const Text("Make a Crash"),
+                ),
+
+                ElevatedButton(
+                  onPressed: () {
                     Navigator.of(context).pushAndRemoveUntil(
                       MaterialPageRoute(builder: (context) => const HomeScreen()),
                           (Route<dynamic> route) => false,
