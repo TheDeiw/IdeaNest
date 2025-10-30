@@ -15,7 +15,6 @@ class SignUpScreen extends StatelessWidget {
               children: [
                 const SizedBox(height: 60),
 
-                // Використовуємо те ж саме зображення
                 Image.asset(
                   'assets/img/logo.png',
                   height: 150,
@@ -42,7 +41,6 @@ class SignUpScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 40),
 
-                // Поле для імені
                 TextField(
                   decoration: InputDecoration(
                     labelText: 'Your name',
@@ -54,7 +52,6 @@ class SignUpScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
 
-                // Поле для Email
                 TextField(
                   decoration: InputDecoration(
                     labelText: 'Enter email',
@@ -66,7 +63,6 @@ class SignUpScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
 
-                // Поле для пароля
                 TextField(
                   obscureText: true,
                   decoration: InputDecoration(
@@ -80,7 +76,6 @@ class SignUpScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
 
-                // Поле для повтору пароля
                 TextField(
                   obscureText: true,
                   decoration: InputDecoration(
@@ -94,7 +89,6 @@ class SignUpScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 24),
 
-                // Кнопка Create Account
                 ElevatedButton(
                   onPressed: () {
                     print("Кнопка 'Create Account' натиснута!");
@@ -113,7 +107,6 @@ class SignUpScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 24),
 
-                // Текст для переходу на екран входу
                 Text.rich(
                   TextSpan(
                     text: "Already have an account? ",

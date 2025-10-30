@@ -13,17 +13,13 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'IdeaNest',
-      // Відключаємо банер "Debug" у кутку
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        // Ви можете налаштувати тему тут
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
 
-      // 2. Переконайтесь, що в 'home:' вказано саме SplashScreen()
-      //    а НЕ MyHomePage(...) або щось інше.
-      home: const SplashScreen(), // <-- НАЙВАЖЛИВІШИЙ РЯДОК
+      home: const SplashScreen(),
     );
   }
 }

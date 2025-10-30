@@ -1,41 +1,31 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:ideanest/src/common/constants/app_colors.dart';
 import 'package:ideanest/src/features/notes/presentation/screens/home_screen.dart';
-
-// Поки що ми не будемо підключати екран реєстрації, тому залишаємо це коментарем.
-// import 'signup_screen.dart';
+import 'package:ideanest/src/features/auth/presentation/screens/signup_screen.dart';
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // Scaffold - це наш базовий "холст" для екрана.
     return Scaffold(
-      // SafeArea гарантує, що наш контент не залізе на системні елементи
-      // (наприклад, "чубчик" на iPhone або статус-бар на Android).
+      backgroundColor: AppColors.surface,
       body: SafeArea(
-        // SingleChildScrollView дозволяє екрану прокручуватися,
-        // якщо контенту забагато (наприклад, коли з'являється клавіатура).
         child: SingleChildScrollView(
-          // Padding додає відступи з усіх боків.
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24.0),
             child: Column(
-              // mainAxisAlignment: MainAxisAlignment.center вирівнює все по центру вертикально.
-              // crossAxisAlignment: CrossAxisAlignment.stretch розтягує дочірні елементи по ширині.
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Відступ зверху
                 const SizedBox(height: 80),
 
-                // Наше зображення, яке ми додали як асет.
                 Image.asset(
                   'assets/img/logo.png',
-                  height: 150, // Можна задати висоту, щоб воно не було завеликим.
+                  height: 150,
                 ),
                 const SizedBox(height: 48),
 
-                // Заголовок "Welcome Back"
                 const Text(
                   'Welcome Back',
                   textAlign: TextAlign.center,
@@ -46,7 +36,6 @@ class LoginScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
 
-                // Підзаголовок
                 Text(
                   'Sign in to access your ideas',
                   textAlign: TextAlign.center,
@@ -57,7 +46,6 @@ class LoginScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 40),
 
-                // Поле для вводу email
                 TextField(
                   decoration: InputDecoration(
                     labelText: 'Enter email or name',
@@ -69,9 +57,8 @@ class LoginScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
 
-                // Поле для вводу пароля
                 TextField(
-                  obscureText: true, // Приховує текст (для паролів)
+                  obscureText: true,
                   decoration: InputDecoration(
                     labelText: 'Enter password',
                     prefixIcon: const Icon(Icons.lock_outline),
@@ -83,10 +70,8 @@ class LoginScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 24),
 
-                // Кнопка Sign In
                 ElevatedButton(
                   onPressed: () {
-                    // Логіка буде тут пізніше. Поки що кнопка просто натискається.
                     Navigator.of(context).pushAndRemoveUntil(
                       MaterialPageRoute(builder: (context) => const HomeScreen()),
                           (Route<dynamic> route) => false,
@@ -97,7 +82,7 @@ class LoginScreen extends StatelessWidget {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    backgroundColor: const Color(0xFF3A425F), // Приблизний колір з макета
+                    backgroundColor: const Color(0xFF3A425F),
                   ),
                   child: const Text(
                     'Sign In',
@@ -106,7 +91,6 @@ class LoginScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 24),
 
-                // Текст для переходу на екран реєстрації
                 Text.rich(
                   TextSpan(
                     text: "Don't have an account? ",
@@ -118,8 +102,11 @@ class LoginScreen extends StatelessWidget {
                           color: Colors.blue[700],
                           fontWeight: FontWeight.bold,
                         ),
-                        // Тут ми додамо навігацію пізніше
-                        // recognizer: TapGestureRecognizer()..onTap = () { ... }
+                        recognizer: TapGestureRecognizer()
+                          ..onTap = () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(builder: (context) => const SignUpScreen()));
+                          },
                       ),
                     ],
                   ),
