@@ -1,36 +1,26 @@
 {
   "project_info": {
-    "project_number": "329836194044",
-    "project_id": "ideanest-2025",
-    "storage_bucket": "ideanest-2025.firebasestorage.app"
+    "project_number": "191269809993",
+    "project_id": "ideanest-2026",
+    "storage_bucket": "ideanest-2026.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:329836194044:android:d04d64c91f9ffe6d744f79",
+        "mobilesdk_app_id": "1:191269809993:android:62e07e81344fbb42157498",
         "android_client_info": {
           "package_name": "com.example.ideanest"
         }
       },
-      "oauth_client": [
-        {
-          "client_id": "329836194044-6mcnehuoj17b4p8kasc96qnecljbeok8.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
+      "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyCwSDyjfEWN-XXEG8rIodZR3JQTBzDIkLU"
+          "current_key": "AIzaSyBLk8cb0I5uLMMxVUW7toQm_5ovPjLdpjU"
         }
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "329836194044-6mcnehuoj17b4p8kasc96qnecljbeok8.apps.googleusercontent.com",
-              "client_type": 3
-            }
-          ]
+          "other_platform_oauth_client": []
         }
       }
     }
