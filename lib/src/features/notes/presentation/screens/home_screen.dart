@@ -15,7 +15,7 @@ class HomeScreen extends StatelessWidget {
     final crossAxisCount = (screenWidth / cardMinWidth).floor().clamp(1, 5);
 
     return Scaffold(
-       backgroundColor: Colors.grey[100],
+       backgroundColor: AppColors.background,
 
       drawer: const AppDrawer(currentRoute: '/home'),
 
@@ -36,7 +36,8 @@ class HomeScreen extends StatelessWidget {
               pinned: false,
               floating: true,
               snap: true,
-              backgroundColor: AppColors.surface,
+              backgroundColor: AppColors.background,
+              surfaceTintColor: AppColors.background,
               elevation: 1,
               leading: Builder(
                 builder: (BuildContext context) => Container(
