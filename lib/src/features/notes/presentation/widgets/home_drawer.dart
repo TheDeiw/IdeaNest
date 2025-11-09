@@ -1,7 +1,7 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ideanest/src/features/tags/presentation/screens/tags_screen.dart';
 
 class HomeDrawer extends StatelessWidget {
   const HomeDrawer({super.key});
@@ -75,7 +75,13 @@ class HomeDrawer extends StatelessWidget {
                   // Tags button
                   InkWell(
                     borderRadius: BorderRadius.circular(14),
-                    onTap: () => Navigator.pop(context),
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                            builder: (context) => const TagsScreen()),
+                      );
+                    },
                     child: Container(
                       height: 42,
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),

@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:ideanest/src/common/constants/app_colors.dart';
@@ -43,8 +44,9 @@ class _LoginScreenState extends State<LoginScreen> {
                 (Route<dynamic> route) => false,
           );
         }
-      } on FirebaseAuthException catch (e) {
+      } on FirebaseAuthException catch (e, s) {
         if (mounted) {
+          FirebaseCrashlytics.instance.recordError(e, s);
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(e.message ?? 'Authentication failed')),
           );
@@ -163,20 +165,19 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     child: _isLoading
                         ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(
-                        color: Colors.white,
-                        strokeWidth: 2,
-                      ),
-                    )
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          )
                         : const Text(
-                      'Sign In',
-                      style: TextStyle(fontSize: 16, color: Colors.white),
-                    ),
+                            'Sign In',
+                            style: TextStyle(fontSize: 16, color: Colors.white),
+                          ),
                   ),
-                  const SizedBox(height: 24),
-
+                  const SizedBox(height: 12),
                   Text.rich(
                     TextSpan(
                       text: "Don't have an account? ",

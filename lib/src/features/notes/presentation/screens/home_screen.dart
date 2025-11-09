@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:ideanest/src/common/constants/app_colors.dart';
-import '../widgets/home_drawer.dart';
+import 'package:ideanest/src/common/widgets/app_drawer.dart';
 import '../widgets/note_card.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -10,10 +10,14 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    const cardMinWidth = 180.0;
+    final crossAxisCount = (screenWidth / cardMinWidth).floor().clamp(1, 5);
+
     return Scaffold(
        backgroundColor: Colors.grey[100],
 
-      drawer: const HomeDrawer(),
+      drawer: const AppDrawer(currentRoute: '/home'),
 
       floatingActionButton: FloatingActionButton(
         onPressed: () {
@@ -100,18 +104,18 @@ class HomeScreen extends StatelessWidget {
 
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: MasonryGridView.count(
-                  crossAxisCount: 2,
-                  mainAxisSpacing: 8,
-                  crossAxisSpacing: 8,
-                  itemCount: 10,
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemBuilder: (context, index) {
-                    return const NoteCard();
-                  },
-                ),
+                  padding: const EdgeInsets.all(8.0),
+                  child: MasonryGridView.count(
+                    crossAxisCount: crossAxisCount,
+                    mainAxisSpacing: 8,
+                    crossAxisSpacing: 8,
+                    itemCount: 10,
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemBuilder: (context, index) {
+                      return const NoteCard();
+                    },
+                  ),
               ),
             ),
           ],

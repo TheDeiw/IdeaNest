@@ -4,6 +4,8 @@ import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'firebase_options.dart';
 import 'package:flutter/material.dart';
 import 'package:ideanest/src/features/auth/presentation/screens/splash_screen.dart';
+import 'package:ideanest/src/features/notes/presentation/screens/home_screen.dart';
+import 'package:ideanest/src/features/tags/presentation/screens/tags_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -27,8 +29,12 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-
       home: const SplashScreen(),
+      routes: {
+        '/home': (context) => const HomeScreen(),
+        '/tags': (context) => const TagsScreen(),
+        // '/settings': (context) => const SettingsScreen(), // TODO: Create settings screen
+      },
     );
   }
 }
