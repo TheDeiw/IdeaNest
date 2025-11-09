@@ -1,12 +1,54 @@
 // In lib/src/features/notes/presentation/screens/note_edit_screen.dart
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ideanest/src/common/constants/app_colors.dart';
+import 'package:ideanest/src/features/tags/application/tags_provider.dart';
+import 'package:ideanest/src/features/tags/presentation/widgets/add_tag_dialog.dart';
 
-class NoteEditScreen extends StatelessWidget {
+class NoteEditScreen extends ConsumerStatefulWidget {
   const NoteEditScreen({super.key});
 
   @override
+  ConsumerState<NoteEditScreen> createState() => _NoteEditScreenState();
+}
+
+class _NoteEditScreenState extends ConsumerState<NoteEditScreen> {
+  final List<String> _selectedTagIds = ['3']; // Default "ideas" tag
+
+  void _showAddTagDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: AddTagDialog(
+          selectedTagIds: _selectedTagIds,
+          onTagsSelected: (selectedIds) {
+            setState(() {
+              _selectedTagIds.clear();
+              _selectedTagIds.addAll(selectedIds);
+            });
+          },
+        ),
+      ),
+    );
+  }
+
+  void _removeTag(String tagId) {
+    setState(() {
+      _selectedTagIds.remove(tagId);
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final tagsNotifier = ref.read(tagsProvider.notifier);
+    final selectedTags = _selectedTagIds
+        .map((id) => tagsNotifier.getTagById(id))
+        .where((tag) => tag != null)
+        .toList();
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -33,19 +75,38 @@ class NoteEditScreen extends StatelessWidget {
             const SizedBox(height: 8),
             Wrap(
               spacing: 8.0,
+              runSpacing: 8.0,
               children: [
-                Chip(
-                  label: const Text("ideas"),
-                  onDeleted: () {},
-                ),
-                Chip(
-                  label: const Text("development"),
-                  onDeleted: () {},
-                ),
+                ...selectedTags.map((tag) => Chip(
+                  label: Text(tag!.name),
+                  backgroundColor: Color(tag.color),
+                  deleteIcon: const Icon(Icons.close, size: 16),
+                  onDeleted: () => _removeTag(tag.id),
+                  labelStyle: TextStyle(
+                    color: _getTextColor(tag.color),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(1000),
+                    side: const BorderSide(
+                      color: Color(0xFFCAC4D0),
+                      width: 1,
+                    ),
+                  ),
+                )),
                 ActionChip(
                   avatar: const Icon(Icons.add, size: 16),
                   label: const Text("Add Tag"),
-                  onPressed: () {},
+                  onPressed: _showAddTagDialog,
+                  backgroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(1000),
+                    side: const BorderSide(
+                      color: Color(0xFFD1D5DC),
+                      width: 1,
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -137,5 +198,12 @@ class NoteEditScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Color _getTextColor(int backgroundColor) {
+    // Simple contrast calculation
+    final color = Color(backgroundColor);
+    final luminance = (0.299 * color.red + 0.587 * color.green + 0.114 * color.blue) / 255;
+    return luminance > 0.5 ? Colors.black87 : Colors.white;
   }
 }

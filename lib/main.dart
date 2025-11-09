@@ -3,6 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'firebase_options.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ideanest/src/features/auth/presentation/screens/splash_screen.dart';
 import 'package:ideanest/src/features/notes/presentation/screens/home_screen.dart';
 import 'package:ideanest/src/features/tags/presentation/screens/tags_screen.dart';
@@ -15,7 +16,7 @@ void main() async {
   );
   FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
 
-  runApp(const MyApp());
+  runApp(const ProviderScope(child: MyApp()));
 }
 
 class MyApp extends StatelessWidget {

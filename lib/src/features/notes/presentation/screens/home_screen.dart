@@ -1,15 +1,17 @@
 // In lib/src/features/notes/presentation/screens/home_screen.dart
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:ideanest/src/common/constants/app_colors.dart';
 import 'package:ideanest/src/common/widgets/app_drawer.dart';
+import 'search_screen.dart';
 import '../widgets/note_card.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final screenWidth = MediaQuery.of(context).size.width;
     const cardMinWidth = 180.0;
     final crossAxisCount = (screenWidth / cardMinWidth).floor().clamp(1, 5);
@@ -82,19 +84,28 @@ class HomeScreen extends StatelessWidget {
                       child: const Icon(Icons.search, color: Color(0xFF49454F)),
                     ),
                     const SizedBox(width: 8),
-                    // Саме поле пошуку — без бордера, займає всю доступну ширину
+                    // Поле пошуку - при кліку відкриває SearchScreen
                     Expanded(
-                      child: TextField(
-                        onChanged: (value) {
-                          // TODO: обробка пошуку
+                      child: GestureDetector(
+                        onTap: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) => const SearchScreen(),
+                            ),
+                          );
                         },
-                        decoration: const InputDecoration(
-                          hintText: 'Search',
-                          border: InputBorder.none,
-                          isDense: true,
-                          contentPadding: EdgeInsets.symmetric(vertical: 12),
+                        child: Container(
+                          color: Colors.transparent,
+                          alignment: Alignment.centerLeft,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          child: const Text(
+                            'Search',
+                            style: TextStyle(
+                              color: Color(0xFF49454F),
+                              fontSize: 16,
+                            ),
+                          ),
                         ),
-                        style: const TextStyle(color: Colors.black),
                       ),
                     ),
                   ],
