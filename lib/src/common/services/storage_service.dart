@@ -12,17 +12,26 @@ class StorageService {
       final userId = _auth.currentUser?.uid;
       if (userId == null) throw Exception('User not authenticated');
 
+      print('☁️ Uploading to Firebase Storage for user: $userId');
+
       // Create reference to storage location
-      final ref = _storage.ref().child('profile_photos/$userId.jpg');
+      final ref = _storage.ref().child('profile_photos/$userId');
+
+      print('☁️ Storage path: profile_photos/$userId');
 
       // Upload file
-      await ref.putFile(
+      final uploadTask = await ref.putFile(
         imageFile,
         SettableMetadata(contentType: 'image/jpeg'),
       );
 
+      print('☁️ Upload complete. Getting download URL...');
+
       // Get download URL
       final downloadUrl = await ref.getDownloadURL();
+
+      print('☁️ Download URL: $downloadUrl');
+
       return downloadUrl;
     } catch (e) {
       print('❌ Error uploading profile photo: $e');

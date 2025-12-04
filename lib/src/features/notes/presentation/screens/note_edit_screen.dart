@@ -148,22 +148,25 @@ class _NoteEditScreenState extends ConsumerState<NoteEditScreen> {
     try {
       final notesNotifier = ref.read(notesProvider.notifier);
 
+      // Debug: print selected tags
+      print('💾 Saving note with tags: $_selectedTagIds');
+
       if (widget.noteId != null) {
         final existingNote = await notesNotifier.getNote(widget.noteId!);
         if (existingNote != null) {
-          await notesNotifier.updateNote(
-            existingNote.copyWith(
-              title: title,
-              content: content,
-              tagIds: _selectedTagIds,
-            ),
+          final updatedNote = existingNote.copyWith(
+            title: title,
+            content: content,
+            tagIds: List<String>.from(_selectedTagIds), // Create new list
           );
+          print('💾 Updated note tags: ${updatedNote.tagIds}');
+          await notesNotifier.updateNote(updatedNote);
         }
       } else {
         await notesNotifier.createNote(
           title: title,
           content: content,
-          tagIds: _selectedTagIds,
+          tagIds: List<String>.from(_selectedTagIds), // Create new list
         );
       }
 
@@ -171,6 +174,7 @@ class _NoteEditScreenState extends ConsumerState<NoteEditScreen> {
         Navigator.of(context).pop(true);
       }
     } catch (e) {
+      print('❌ Error saving note: $e');
       if (mounted) {
         setState(() => _isLoading = false);
         ScaffoldMessenger.of(context).showSnackBar(

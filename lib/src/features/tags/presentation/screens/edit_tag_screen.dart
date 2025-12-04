@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ideanest/src/features/tags/application/tags_provider.dart';
+import 'package:ideanest/src/features/tags/domain/tag.dart';
 
-class EditTagScreen extends StatefulWidget {
+class EditTagScreen extends ConsumerStatefulWidget {
+  final Tag? tag; // null for creating new tag
   final String tagName;
   final Color tagColor;
   final Color tagBackgroundColor;
@@ -8,6 +12,7 @@ class EditTagScreen extends StatefulWidget {
 
   const EditTagScreen({
     super.key,
+    this.tag,
     required this.tagName,
     required this.tagColor,
     required this.tagBackgroundColor,
@@ -15,10 +20,10 @@ class EditTagScreen extends StatefulWidget {
   });
 
   @override
-  State<EditTagScreen> createState() => _EditTagScreenState();
+  ConsumerState<EditTagScreen> createState() => _EditTagScreenState();
 }
 
-class _EditTagScreenState extends State<EditTagScreen> {
+class _EditTagScreenState extends ConsumerState<EditTagScreen> {
   late TextEditingController _nameController;
   late Color _selectedColor;
   late Color _selectedBgColor;
@@ -347,9 +352,41 @@ class _EditTagScreenState extends State<EditTagScreen> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: () {
-                      // TODO: Save changes
-                      Navigator.of(context).pop();
+                    onPressed: () async {
+                      final name = _nameController.text.trim();
+                      if (name.isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Please enter a tag name')),
+                        );
+                        return;
+                      }
+
+                      try {
+                        if (widget.tag != null) {
+                          // Update existing tag
+                          final updatedTag = widget.tag!.copyWith(
+                            name: name,
+                            color: _selectedColor.value,
+                          );
+                          await ref.read(tagsProvider.notifier).updateTag(updatedTag);
+                        } else {
+                          // Create new tag
+                          await ref.read(tagsProvider.notifier).addTag(name, _selectedColor.value);
+                        }
+
+                        if (mounted) {
+                          Navigator.of(context).pop();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text(widget.tag != null ? 'Tag updated!' : 'Tag created!')),
+                          );
+                        }
+                      } catch (e) {
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Error: $e')),
+                          );
+                        }
+                      }
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF101828),
@@ -360,9 +397,9 @@ class _EditTagScreenState extends State<EditTagScreen> {
                       padding: const EdgeInsets.symmetric(vertical: 10),
                       elevation: 0,
                     ),
-                    child: const Text(
-                      'Save Changes',
-                      style: TextStyle(
+                    child: Text(
+                      widget.tag != null ? 'Save Changes' : 'Create Tag',
+                      style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
                       ),

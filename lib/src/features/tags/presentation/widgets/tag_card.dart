@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ideanest/src/features/tags/application/tags_provider.dart';
+import 'package:ideanest/src/features/tags/presentation/screens/edit_tag_screen.dart';
 
 class TagCard extends ConsumerWidget {
   final String tagId;
@@ -60,6 +61,29 @@ class TagCard extends ConsumerWidget {
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
+                // Edit button
+                IconButton(
+                  icon: const Icon(Icons.edit_outlined, size: 18),
+                  onPressed: () async {
+                    final tagsAsync = ref.read(tagsProvider);
+                    final tag = tagsAsync.value?.firstWhere((t) => t.id == tagId);
+
+                    if (tag != null) {
+                      showDialog(
+                        context: context,
+                        builder: (context) => EditTagScreen(
+                          tag: tag,
+                          tagName: tagName,
+                          tagColor: tagColor,
+                          tagBackgroundColor: tagBackgroundColor,
+                          tagBorderColor: tagBorderColor,
+                        ),
+                      );
+                    }
+                  },
+                  color: const Color(0xFF4A5565),
+                  tooltip: 'Edit tag',
+                ),
                 // Delete button
                 IconButton(
                   icon: const Icon(Icons.delete_outline, size: 18),

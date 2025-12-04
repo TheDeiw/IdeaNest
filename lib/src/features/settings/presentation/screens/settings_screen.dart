@@ -20,6 +20,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   bool _isUploadingPhoto = false;
 
   Future<void> _pickAndUploadPhoto() async {
+    print('📸 Starting photo picker...');
+
     final XFile? image = await _picker.pickImage(
       source: ImageSource.gallery,
       maxWidth: 512,
@@ -28,18 +30,27 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
 
     if (image != null) {
+      print('📸 Photo selected: ${image.path}');
       setState(() => _isUploadingPhoto = true);
 
       try {
         final file = File(image.path);
+        print('📸 File size: ${await file.length()} bytes');
+
+        print('📸 Calling updateProfilePhoto...');
         await ref.read(userProfileProvider.notifier).updateProfilePhoto(file);
+
+        print('📸 Photo uploaded successfully!');
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Profile photo updated!')),
           );
         }
-      } catch (e) {
+      } catch (e, stackTrace) {
+        print('❌ Error uploading photo: $e');
+        print('❌ Stack trace: $stackTrace');
+
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Error: $e')),
@@ -50,6 +61,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           setState(() => _isUploadingPhoto = false);
         }
       }
+    } else {
+      print('📸 No photo selected');
     }
   }
 
@@ -149,6 +162,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               final email = profile?.email ?? FirebaseAuth.instance.currentUser?.email ?? '';
               final photoURL = profile?.photoURL;
 
+              // Debug logging
+              print('👤 Profile photoURL: $photoURL');
+              print('👤 Profile object: ${profile?.toFirestore()}');
+
               return Column(
                 children: [
                   // Account Info Card
@@ -174,14 +191,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                     decoration: BoxDecoration(
                                       color: const Color(0xFF101828),
                                       shape: BoxShape.circle,
-                                      image: photoURL != null
+                                      image: (photoURL != null && photoURL.isNotEmpty)
                                           ? DecorationImage(
                                               image: NetworkImage(photoURL),
                                               fit: BoxFit.cover,
+                                              onError: (error, stackTrace) {
+                                                print('❌ Error loading image: $error');
+                                              },
                                             )
                                           : null,
                                     ),
-                                    child: photoURL == null
+                                    child: (photoURL == null || photoURL.isEmpty)
                                         ? const Icon(Icons.person, color: Colors.white, size: 32)
                                         : null,
                                   ),

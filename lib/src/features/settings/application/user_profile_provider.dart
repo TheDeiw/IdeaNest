@@ -53,22 +53,38 @@ class UserProfileNotifier extends AsyncNotifier<UserProfile?> {
   /// Update profile photo
   Future<void> updateProfilePhoto(File imageFile) async {
     try {
+      print('🔄 UserProfileProvider: Starting photo update');
+
       final storageService = StorageService();
 
       // Upload to Firebase Storage
+      print('🔄 Uploading to Storage...');
       final photoURL = await storageService.uploadProfilePhoto(imageFile);
 
       if (photoURL != null) {
+        print('🔄 Photo URL received: $photoURL');
+
         // Update in Firestore
+        print('🔄 Updating Firestore...');
         await _repository.updatePhotoURL(photoURL);
 
         // Force refresh to get updated profile
+        print('🔄 Refreshing profile state...');
         state = const AsyncValue.loading();
         final updatedProfile = await _repository.getUserProfile();
+
+        print('🔄 Updated profile photoURL: ${updatedProfile?.photoURL}');
+
         state = AsyncValue.data(updatedProfile);
+
+        print('✅ Photo update complete!');
+      } else {
+        print('❌ Photo URL is null');
       }
-    } catch (e) {
-      state = AsyncValue.error(e, StackTrace.current);
+    } catch (e, stackTrace) {
+      print('❌ Error in updateProfilePhoto: $e');
+      print('❌ Stack trace: $stackTrace');
+      state = AsyncValue.error(e, stackTrace);
     }
   }
 
