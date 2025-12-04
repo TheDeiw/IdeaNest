@@ -21,6 +21,7 @@ class _AddTagDialogState extends ConsumerState<AddTagDialog> {
   final TextEditingController _searchController = TextEditingController();
   late List<String> _selectedTags;
   String _searchQuery = '';
+  bool _isCreatingTag = false;
 
   @override
   void initState() {
@@ -49,32 +50,72 @@ class _AddTagDialogState extends ConsumerState<AddTagDialog> {
     });
   }
 
-  void _createNewTag() {
+  Future<void> _createNewTag() async {
     final tagName = _searchQuery.trim();
-    if (tagName.isEmpty) return;
+    if (tagName.isEmpty || _isCreatingTag) return;
 
-    final tagsNotifier = ref.read(tagsProvider.notifier);
+    setState(() => _isCreatingTag = true);
 
-    // Перевірка чи тег вже існує
-    final existingTag = tagsNotifier.findTagByName(tagName);
-    if (existingTag != null) {
-      _toggleTag(existingTag.id);
-      return;
+    try {
+      final tagsAsync = ref.read(tagsProvider);
+
+      // Check if tag already exists
+      Tag? existingTag;
+      try {
+        existingTag = tagsAsync.value?.firstWhere(
+          (tag) => tag.name.toLowerCase() == tagName.toLowerCase(),
+        );
+      } catch (_) {
+        existingTag = null;
+      }
+
+      if (existingTag != null) {
+        _toggleTag(existingTag.id);
+        setState(() {
+          _searchController.clear();
+          _searchQuery = '';
+          _isCreatingTag = false;
+        });
+        return;
+      }
+
+      // Create new tag in Firestore
+      await ref.read(tagsProvider.notifier).addTag(
+        tagName,
+        _getRandomColor(),
+      );
+
+      // Wait for the provider to update
+      await Future.delayed(const Duration(milliseconds: 500));
+
+      // Get the newly created tag
+      Tag? newTag;
+      try {
+        newTag = ref.read(tagsProvider).value?.firstWhere(
+          (tag) => tag.name.toLowerCase() == tagName.toLowerCase(),
+        );
+      } catch (_) {
+        newTag = null;
+      }
+
+      if (newTag != null && mounted) {
+        setState(() {
+          _selectedTags.add(newTag!.id);
+          _searchController.clear();
+          _searchQuery = '';
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error creating tag: $e')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isCreatingTag = false);
+      }
     }
-
-    // Створення нового тегу
-    final newTag = Tag(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      name: tagName,
-      color: _getRandomColor(),
-    );
-
-    tagsNotifier.addTag(newTag);
-    setState(() {
-      _selectedTags.add(newTag.id);
-      _searchController.clear();
-      _searchQuery = '';
-    });
   }
 
   int _getRandomColor() {
@@ -95,10 +136,7 @@ class _AddTagDialogState extends ConsumerState<AddTagDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final allTags = ref.watch(tagsProvider);
-    final filteredTags = _searchQuery.isEmpty
-        ? allTags
-        : ref.read(tagsProvider.notifier).searchTags(_searchQuery);
+    final tagsAsync = ref.watch(tagsProvider);
 
     return Container(
       decoration: BoxDecoration(
@@ -142,6 +180,7 @@ class _AddTagDialogState extends ConsumerState<AddTagDialog> {
           // Search/Create input
           TextField(
             controller: _searchController,
+            enabled: !_isCreatingTag,
             decoration: InputDecoration(
               hintText: 'Search or create tag...',
               hintStyle: const TextStyle(
@@ -186,16 +225,47 @@ class _AddTagDialogState extends ConsumerState<AddTagDialog> {
           // Tags list
           Container(
             constraints: const BoxConstraints(maxHeight: 144),
-            child: SingleChildScrollView(
-              child: Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  ...filteredTags.map((tag) => _buildTagChip(tag)),
-                  if (_searchQuery.isNotEmpty && filteredTags.isEmpty)
-                    _buildCreateTagChip(),
-                ],
-              ),
+            child: tagsAsync.when(
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (error, stack) => Center(child: Text('Error: $error')),
+              data: (allTags) {
+                final filteredTags = _searchQuery.isEmpty
+                    ? allTags
+                    : allTags.where((tag) =>
+                        tag.name.toLowerCase().contains(_searchQuery.toLowerCase())
+                      ).toList();
+
+                // Show empty state if no tags exist
+                if (allTags.isEmpty && _searchQuery.isEmpty) {
+                  return const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(16.0),
+                      child: Text(
+                        'No tags yet. Type to create your first tag!',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Color(0xFF49454F),
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                  );
+                }
+
+                return SingleChildScrollView(
+                  child: Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      ...filteredTags.map((tag) => _buildTagChip(tag)),
+                      if (_searchQuery.isNotEmpty &&
+                          !filteredTags.any((tag) =>
+                            tag.name.toLowerCase() == _searchQuery.toLowerCase()))
+                        _buildCreateTagChip(),
+                    ],
+                  ),
+                );
+              },
             ),
           ),
           const SizedBox(height: 16),
@@ -204,10 +274,12 @@ class _AddTagDialogState extends ConsumerState<AddTagDialog> {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: () {
-                widget.onTagsSelected(_selectedTags);
-                Navigator.of(context).pop();
-              },
+              onPressed: _isCreatingTag
+                  ? null
+                  : () {
+                      widget.onTagsSelected(_selectedTags);
+                      Navigator.of(context).pop();
+                    },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF33394D),
                 padding: const EdgeInsets.symmetric(vertical: 12),
@@ -307,9 +379,10 @@ class _AddTagDialogState extends ConsumerState<AddTagDialog> {
   }
 
   Color _getTextColor(int backgroundColor) {
-    // Simple contrast calculation
-    final color = Color(backgroundColor);
-    final luminance = (0.299 * color.red + 0.587 * color.green + 0.114 * color.blue) / 255;
+    final r = (backgroundColor >> 16) & 0xFF;
+    final g = (backgroundColor >> 8) & 0xFF;
+    final b = backgroundColor & 0xFF;
+    final luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
     return luminance > 0.5 ? Colors.black87 : Colors.white;
   }
 }

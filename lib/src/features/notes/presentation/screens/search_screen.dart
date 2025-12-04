@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:ideanest/src/features/tags/application/tags_provider.dart';
 import 'package:ideanest/src/features/notes/application/search_provider.dart';
+import 'package:ideanest/src/features/notes/application/filtered_notes_provider.dart';
 import '../widgets/note_card.dart';
 
 class SearchScreen extends ConsumerStatefulWidget {
@@ -18,7 +19,6 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   @override
   void initState() {
     super.initState();
-    // Очищаємо попередній пошук при відкритті екрану
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(searchQueryProvider.notifier).clear();
       ref.read(selectedFilterTagsProvider.notifier).clear();
@@ -44,7 +44,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   @override
   Widget build(BuildContext context) {
     final selectedFilterTags = ref.watch(selectedFilterTagsProvider);
-    final allTags = ref.watch(tagsProvider);
+    final tagsAsync = ref.watch(tagsProvider);
+    final filteredNotesAsync = ref.watch(filteredNotesProvider);
     final screenWidth = MediaQuery.of(context).size.width;
     const cardMinWidth = 180.0;
     final crossAxisCount = (screenWidth / cardMinWidth).floor().clamp(1, 5);
@@ -67,13 +68,11 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
               height: 72,
               child: Row(
                 children: [
-                  // Back button
                   IconButton(
                     icon: const Icon(Icons.arrow_back),
                     onPressed: () => Navigator.of(context).pop(),
                     padding: const EdgeInsets.all(12),
                   ),
-                  // Search input
                   Expanded(
                     child: TextField(
                       controller: _searchController,
@@ -93,7 +92,6 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                       ),
                     ),
                   ),
-                  // Close button
                   IconButton(
                     icon: const Icon(Icons.close),
                     onPressed: _clearSearch,
@@ -124,61 +122,70 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                   ),
                   const SizedBox(height: 8),
                   SizedBox(
-                    height: 106, // 3 рядки × ~30px + проміжки
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: SizedBox(
-                        width: MediaQuery.of(context).size.width * 2, // Ширина для 3 рядків
-                        child: Wrap(
-                          direction: Axis.horizontal,
-                          spacing: 8,
-                          runSpacing: 8,
-                          children: allTags.map((tag) {
-                            final isSelected = selectedFilterTags.contains(tag.id);
-                            return InkWell(
-                              onTap: () => _toggleFilterTag(tag.id),
-                              borderRadius: BorderRadius.circular(16),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 13,
-                                  vertical: 7,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: isSelected ? Color(tag.color) : Colors.white,
-                                  borderRadius: BorderRadius.circular(isSelected ? 16 : 1000),
-                                  border: Border.all(
-                                    color: const Color(0xFFCAC4D0),
-                                    width: 1,
-                                  ),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(
-                                      tag.name,
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w500,
-                                        color: isSelected
-                                            ? _getTextColor(tag.color)
-                                            : const Color(0xFF1D1B20),
+                    height: 106,
+                    child: tagsAsync.when(
+                      loading: () => const Center(child: CircularProgressIndicator()),
+                      error: (err, _) => Center(child: Text('Error: $err')),
+                      data: (allTags) {
+                        if (allTags.isEmpty) {
+                          return const Center(child: Text('No tags available'));
+                        }
+                        return SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: SizedBox(
+                            width: MediaQuery.of(context).size.width * 2,
+                            child: Wrap(
+                              direction: Axis.horizontal,
+                              spacing: 8,
+                              runSpacing: 8,
+                              children: allTags.map((tag) {
+                                final isSelected = selectedFilterTags.contains(tag.id);
+                                return InkWell(
+                                  onTap: () => _toggleFilterTag(tag.id),
+                                  borderRadius: BorderRadius.circular(16),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 13,
+                                      vertical: 7,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: isSelected ? Color(tag.color) : Colors.white,
+                                      borderRadius: BorderRadius.circular(isSelected ? 16 : 1000),
+                                      border: Border.all(
+                                        color: const Color(0xFFCAC4D0),
+                                        width: 1,
                                       ),
                                     ),
-                                    if (isSelected) ...[
-                                      const SizedBox(width: 4),
-                                      Icon(
-                                        Icons.close,
-                                        size: 12,
-                                        color: _getTextColor(tag.color),
-                                      ),
-                                    ],
-                                  ],
-                                ),
-                              ),
-                            );
-                          }).toList(),
-                        ),
-                      ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text(
+                                          tag.name,
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w500,
+                                            color: isSelected
+                                                ? _getTextColor(tag.color)
+                                                : const Color(0xFF1D1B20),
+                                          ),
+                                        ),
+                                        if (isSelected) ...[
+                                          const SizedBox(width: 4),
+                                          Icon(
+                                            Icons.close,
+                                            size: 12,
+                                            color: _getTextColor(tag.color),
+                                          ),
+                                        ],
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              }).toList(),
+                            ),
+                          ),
+                        );
+                      },
                     ),
                   ),
                 ],
@@ -196,13 +203,48 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: MasonryGridView.count(
-                  crossAxisCount: crossAxisCount,
-                  mainAxisSpacing: 16,
-                  crossAxisSpacing: 16,
-                  itemCount: 3, // TODO: Replace with filtered notes
-                  itemBuilder: (context, index) {
-                    return const NoteCard();
+                child: filteredNotesAsync.when(
+                  loading: () => const Center(child: CircularProgressIndicator()),
+                  error: (err, _) => Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.error_outline, size: 48, color: Colors.red),
+                        const SizedBox(height: 16),
+                        Text('Error: $err'),
+                      ],
+                    ),
+                  ),
+                  data: (notes) {
+                    if (notes.isEmpty) {
+                      return const Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.search_off, size: 64, color: Colors.grey),
+                            SizedBox(height: 16),
+                            Text(
+                              'No notes found',
+                              style: TextStyle(fontSize: 18, color: Colors.grey),
+                            ),
+                            SizedBox(height: 8),
+                            Text(
+                              'Try different search terms or tags',
+                              style: TextStyle(color: Colors.grey),
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+                    return MasonryGridView.count(
+                      crossAxisCount: crossAxisCount,
+                      mainAxisSpacing: 16,
+                      crossAxisSpacing: 16,
+                      itemCount: notes.length,
+                      itemBuilder: (context, index) {
+                        return NoteCard(note: notes[index]);
+                      },
+                    );
                   },
                 ),
               ),
@@ -210,20 +252,14 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
           ],
         ),
       ),
-      // FAB для додавання нової нотатки
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // TODO: Navigate to add note
-        },
-        backgroundColor: const Color(0xFFB4D3E1),
-        child: const Icon(Icons.add, size: 32, color: Colors.black),
-      ),
     );
   }
 
   Color _getTextColor(int backgroundColor) {
-    final color = Color(backgroundColor);
-    final luminance = (0.299 * color.red + 0.587 * color.green + 0.114 * color.blue) / 255;
+    final r = (backgroundColor >> 16) & 0xFF;
+    final g = (backgroundColor >> 8) & 0xFF;
+    final b = backgroundColor & 0xFF;
+    final luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
     return luminance > 0.5 ? Colors.black87 : Colors.white;
   }
 }

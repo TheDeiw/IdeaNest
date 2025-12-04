@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 // Tag model
 class Tag {
   final String id;
@@ -19,6 +21,24 @@ class Tag {
       id: id ?? this.id,
       name: name ?? this.name,
       color: color ?? this.color,
+    );
+  }
+
+  /// Convert Tag to Firestore document
+  Map<String, dynamic> toFirestore() {
+    return {
+      'name': name,
+      'color': color,
+    };
+  }
+
+  /// Create Tag from Firestore document
+  factory Tag.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
+    final data = doc.data()!;
+    return Tag(
+      id: doc.id,
+      name: data['name'] as String,
+      color: data['color'] as int,
     );
   }
 

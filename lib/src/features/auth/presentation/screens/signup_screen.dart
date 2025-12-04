@@ -1,16 +1,18 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ideanest/src/common/constants/app_colors.dart';
 import 'package:ideanest/src/features/notes/presentation/screens/home_screen.dart';
+import 'package:ideanest/src/features/settings/application/user_profile_provider.dart';
 
-class SignUpScreen extends StatefulWidget {
+class SignUpScreen extends ConsumerStatefulWidget {
   const SignUpScreen({super.key});
 
   @override
-  State<SignUpScreen> createState() => _SignUpScreenState();
+  ConsumerState<SignUpScreen> createState() => _SignUpScreenState();
 }
 
-class _SignUpScreenState extends State<SignUpScreen> {
+class _SignUpScreenState extends ConsumerState<SignUpScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
@@ -35,21 +37,41 @@ class _SignUpScreenState extends State<SignUpScreen> {
         _isLoading = true;
       });
       try {
-        await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        // Create Firebase Auth user
+        final userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
           email: _emailController.text.trim(),
           password: _passwordController.text.trim(),
         );
 
+
+        // Trigger user profile initialization (will auto-create in Firestore)
+        ref.invalidate(userProfileProvider);
+
+        // Wait for profile to be created and update display name if provided
+        if (userCredential.user != null && _nameController.text.trim().isNotEmpty) {
+          // Give Firestore time to create the profile
+          await Future.delayed(const Duration(milliseconds: 500));
+          await ref.read(userProfileProvider.notifier).updateDisplayName(
+            _nameController.text.trim(),
+          );
+        }
+
         if (mounted) {
           Navigator.of(context).pushAndRemoveUntil(
             MaterialPageRoute(builder: (context) => const HomeScreen()),
-                (Route<dynamic> route) => false,
+            (Route<dynamic> route) => false,
           );
         }
       } on FirebaseAuthException catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(e.message ?? 'Registration failed')),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error creating profile: $e')),
           );
         }
       } finally {

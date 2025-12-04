@@ -4,7 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:ideanest/src/common/constants/app_colors.dart';
 import 'package:ideanest/src/common/widgets/app_drawer.dart';
+import 'package:ideanest/src/features/notes/application/filtered_notes_provider.dart';
 import 'search_screen.dart';
+import 'note_edit_screen.dart';
 import '../widgets/note_card.dart';
 
 class HomeScreen extends ConsumerWidget {
@@ -23,7 +25,11 @@ class HomeScreen extends ConsumerWidget {
 
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // TODO: Логіка створення нової нотатки
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => const NoteEditScreen(),
+            ),
+          );
         },
         backgroundColor: AppColors.primaryVariant,
         foregroundColor: Colors.black,
@@ -64,7 +70,9 @@ class HomeScreen extends ConsumerWidget {
                   ),
                   child: IconButton(
                     icon: const Icon(Icons.person_outline, color: Color(0xFF49454F)),
-                    onPressed: () { /* TODO: Profile action */ },
+                    onPressed: () {
+                      Navigator.of(context).pushNamed('/settings');
+                    },
                   ),
                 ),
               ],
@@ -114,21 +122,71 @@ class HomeScreen extends ConsumerWidget {
 
             ),
 
-            SliverToBoxAdapter(
-              child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: MasonryGridView.count(
-                    crossAxisCount: crossAxisCount,
-                    mainAxisSpacing: 8,
-                    crossAxisSpacing: 8,
-                    itemCount: 10,
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemBuilder: (context, index) {
-                      return const NoteCard();
-                    },
-                  ),
+            // Notes grid from Firestore
+            ref.watch(filteredNotesProvider).when(
+              loading: () => const SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.all(32.0),
+                  child: Center(child: CircularProgressIndicator()),
+                ),
               ),
+              error: (error, stack) => SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.all(32.0),
+                  child: Center(
+                    child: Column(
+                      children: [
+                        const Icon(Icons.error_outline, size: 48, color: Colors.red),
+                        const SizedBox(height: 16),
+                        Text('Error: $error', textAlign: TextAlign.center),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              data: (notes) {
+                if (notes.isEmpty) {
+                  return const SliverToBoxAdapter(
+                    child: Padding(
+                      padding: EdgeInsets.all(32.0),
+                      child: Center(
+                        child: Column(
+                          children: [
+                            Icon(Icons.note_add_outlined, size: 64, color: Colors.grey),
+                            SizedBox(height: 16),
+                            Text(
+                              'No notes yet',
+                              style: TextStyle(fontSize: 18, color: Colors.grey),
+                            ),
+                            SizedBox(height: 8),
+                            Text(
+                              'Tap + to create your first note',
+                              style: TextStyle(color: Colors.grey),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                }
+
+                return SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: MasonryGridView.count(
+                      crossAxisCount: crossAxisCount,
+                      mainAxisSpacing: 8,
+                      crossAxisSpacing: 8,
+                      itemCount: notes.length,
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemBuilder: (context, index) {
+                        return NoteCard(note: notes[index]);
+                      },
+                    ),
+                  ),
+                );
+              },
             ),
           ],
         ),

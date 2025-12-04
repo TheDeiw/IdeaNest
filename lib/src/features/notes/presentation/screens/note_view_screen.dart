@@ -2,9 +2,20 @@
 import 'package:flutter/material.dart';
 import 'package:ideanest/src/common/constants/app_colors.dart';
 import 'package:ideanest/src/features/notes/presentation/screens/note_edit_screen.dart';
+import 'package:ideanest/src/features/notes/presentation/widgets/delete_note_dialog.dart';
 
 class NoteViewScreen extends StatelessWidget {
   const NoteViewScreen({super.key});
+
+  Future<void> _handleDelete(BuildContext context, String noteTitle) async {
+    final result = await DeleteNoteDialog.show(context, noteTitle);
+
+    if (result == true && context.mounted) {
+      // TODO: Add actual delete logic here
+      // For now, just navigate back to home screen
+      Navigator.of(context).pop();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +42,7 @@ class NoteViewScreen extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   _buildIconButton(context, Icons.arrow_back, () => Navigator.of(context).pop()),
-                  _buildIconButton(context, Icons.delete_outline, () { /* TODO: Delete logic */ }),
+                  _buildIconButton(context, Icons.delete_outline, () => _handleDelete(context, "App Ideas")),
                 ],
               ),
               const SizedBox(height: 24),
