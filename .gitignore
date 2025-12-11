@@ -62,5 +62,4 @@ key.properties
 # Note: These files contain Firebase API keys which should be restricted in Firebase Console
 google-services.json
 GoogleService-Info.plist
-firebase_options.dart
 
