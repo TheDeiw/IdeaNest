@@ -60,6 +60,6 @@ key.properties
 
 # Firebase configuration files with API keys
 # Note: These files contain Firebase API keys which should be restricted in Firebase Console
-google-services.json
-GoogleService-Info.plist
+
+
 
