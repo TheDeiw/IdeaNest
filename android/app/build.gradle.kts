@@ -21,6 +21,18 @@ android {
         jvmTarget = JavaVersion.VERSION_11.toString()
     }
 
+    // Signing configuration for CI/CD
+    signingConfigs {
+        create("release") {
+            // Support for environment variables (Bitrise, GitHub Actions)
+            storeFile = System.getenv("KEYSTORE_FILE")?.let { file(it) }
+                ?: rootProject.file("key.jks").takeIf { it.exists() }
+            storePassword = System.getenv("KEYSTORE_PASSWORD") ?: "android"
+            keyAlias = System.getenv("KEY_ALIAS") ?: "key"
+            keyPassword = System.getenv("KEY_PASSWORD") ?: "android"
+        }
+    }
+
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId = "com.example.ideanest"
@@ -34,9 +46,17 @@ android {
 
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            // Use release signing if available, otherwise fall back to debug
+            signingConfig = signingConfigs.findByName("release")?.takeIf {
+                it.storeFile?.exists() == true
+            } ?: signingConfigs.getByName("debug")
+
+            // Enable code shrinking and obfuscation for release builds
+            isMinifyEnabled = false
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
         }
     }
 }

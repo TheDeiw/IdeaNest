@@ -1,0 +1,137 @@
+---
+format_version: '13'
+default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
+
+project_type: flutter
+
+# Trigger configuration
+trigger_map:
+- push_branch: main
+  workflow: deploy
+- pull_request_source_branch: "*"
+  workflow: test
+
+# Workflows
+workflows:
+  # Workflow for testing on pull requests
+  test:
+    steps:
+    - activate-ssh-key@4:
+        run_if: '{{getenv "SSH_RSA_PRIVATE_KEY" | ne ""}}'
+    - git-clone@8: {}
+    - flutter-installer@0:
+        inputs:
+        - version: stable
+        - is_update: 'false'
+    - cache-pull@2: {}
+    - flutter-analyze@0:
+        inputs:
+        - project_location: "$BITRISE_SOURCE_DIR"
+    - flutter-test@1:
+        inputs:
+        - project_location: "$BITRISE_SOURCE_DIR"
+    - cache-push@2: {}
+
+  # Workflow for deployment to Firebase App Distribution
+  deploy:
+    description: |
+      Builds the Flutter app for Android and deploys to Firebase App Distribution
+    steps:
+    - activate-ssh-key@4:
+        run_if: '{{getenv "SSH_RSA_PRIVATE_KEY" | ne ""}}'
+    - git-clone@8: {}
+    - flutter-installer@0:
+        inputs:
+        - version: stable
+        - is_update: 'false'
+    - cache-pull@2: {}
+
+    # Get dependencies
+    - script@1:
+        title: Flutter pub get
+        inputs:
+        - content: |
+            #!/usr/bin/env bash
+            set -ex
+            flutter pub get
+
+    # Run tests
+    - flutter-test@1:
+        inputs:
+        - project_location: "$BITRISE_SOURCE_DIR"
+        is_always_run: false
+
+    # Build Android APK
+    - script@1:
+        title: Build Android APK (Release)
+        inputs:
+        - content: |
+            #!/usr/bin/env bash
+            set -ex
+            
+            echo "Building Android APK..."
+            flutter build apk --release
+            
+            # Copy APK to deploy directory
+            cp build/app/outputs/flutter-apk/app-release.apk $BITRISE_DEPLOY_DIR/ideanest-release.apk
+            
+            echo "APK built successfully!"
+            ls -lh $BITRISE_DEPLOY_DIR/
+
+    # Alternative: Build Android App Bundle (AAB) for Google Play
+    # Uncomment if you want to build AAB instead of APK
+    # - script@1:
+    #     title: Build Android App Bundle (Release)
+    #     inputs:
+    #     - content: |
+    #         #!/usr/bin/env bash
+    #         set -ex
+    #
+    #         echo "Building Android App Bundle..."
+    #         flutter build appbundle --release
+    #
+    #         # Copy AAB to deploy directory
+    #         cp build/app/outputs/bundle/release/app-release.aab $BITRISE_DEPLOY_DIR/ideanest-release.aab
+    #
+    #         echo "AAB built successfully!"
+    #         ls -lh $BITRISE_DEPLOY_DIR/
+
+    # Deploy to Firebase App Distribution
+    - firebase-app-distribution@0:
+        inputs:
+        - app_path: "$BITRISE_DEPLOY_DIR/ideanest-release.apk"
+        - firebase_token: "$FIREBASE_TOKEN"
+        - app: "$FIREBASE_APP_ID"
+        - groups: "testers"
+        - release_notes: |
+            Build: $BITRISE_BUILD_NUMBER
+            Branch: $BITRISE_GIT_BRANCH
+            Commit: $BITRISE_GIT_COMMIT
+            
+            Automated build from Bitrise CI/CD
+        - upgrade_firebase_tools: 'yes'
+
+    # Save build artifacts
+    - deploy-to-bitrise-io@2:
+        inputs:
+        - notify_user_groups: none
+
+    # Cache dependencies for faster builds
+    - cache-push@2: {}
+
+# App and build configuration
+app:
+  envs:
+  - opts:
+      is_expand: false
+    FLUTTER_VERSION: stable
+  - opts:
+      is_expand: false
+    GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx2048m -Dorg.gradle.daemon=false"
+
+# Meta information
+meta:
+  bitrise.io:
+    stack: linux-docker-android-20.04
+    machine_type_id: standard
+
