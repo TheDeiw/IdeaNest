@@ -45,6 +45,10 @@ android {
     }
 
     buildTypes {
+        debug {
+            isMinifyEnabled = false
+            isShrinkResources = false
+        }
         release {
             // Use release signing if available, otherwise fall back to debug
             signingConfig = signingConfigs.findByName("release")?.takeIf {
@@ -53,6 +57,7 @@ android {
 
             // Enable code shrinking and obfuscation for release builds
             isMinifyEnabled = false
+            isShrinkResources = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
