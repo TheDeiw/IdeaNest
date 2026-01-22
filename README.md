@@ -1,160 +1,94 @@
+
 # IdeaNest - Flutter Note Taking Application
 
-📝 Застосунок для створення та організації нотаток з тегами, пошуком та Firebase інтеграцією.
+📝 A comprehensive application for creating and organizing notes with tagging, search functionality, and full Firebase integration.
+
+<img width="1920" height="1080" alt="Thumbnail1" src="https://github.com/user-attachments/assets/be0d08b6-d2e9-4614-9038-f4963c1115b1" />
+
+Link to the design: https://www.figma.com/community/file/1595938384089942019/ideanest
 
 ---
 
-## 🚀 Швидкий старт
+## ✨ Features
 
-### 1. Почніть звідси
-👉 **[START_HERE.md](START_HERE.md)** - Головна інструкція що робити далі
-
-### 2. Налаштування Firebase Storage
-👉 **[FIREBASE_STORAGE_SETUP.md](FIREBASE_STORAGE_SETUP.md)** - Детальна покрокова інструкція
-
-### 3. Видалення тимчасових файлів
-👉 **[DELETE_TEMP_FILES.md](DELETE_TEMP_FILES.md)** - Як очистити проект
-
----
-
-## ✨ Функції
-
-### Реалізовано
-- ✅ Аутентифікація (реєстрація, вхід, вихід)
-- ✅ Профіль користувача (ім'я, email, фото)
-- ✅ Завантаження фото профілю в Firebase Storage
-- ✅ Редагування імені профілю
-- ✅ Remember Me (залишатись в системі)
-- ✅ CRUD операції з нотатками
-- ✅ CRUD операції з тегами
-- ✅ Пошук нотаток
-- ✅ Фільтрація по тегам
-- ✅ Всі дані в Firebase Firestore
-- ✅ Security Rules налаштовані
-- ✅ Немає хардкоджених даних
+### Implemented Functionality
+*   **Authentication:** User Registration, Login, and Logout.
+*   **User Profile:** View name, email, and profile photo.
+    *   **Photo Upload:** Upload profile pictures directly to Firebase Storage.
+    *   **Profile Editing:** Ability to update the display name.
+*   **Session Management:** "Remember Me" functionality to stay logged in.
+*   **Notes Management:** Full CRUD (Create, Read, Update, Delete) operations for notes.
+*   **Tag System:** Full CRUD operations for tags.
+*   **Search & Filter:**
+    *   Search through notes.
+    *   Filter notes by specific tags.
+*   **Backend:**
+    *   All data is stored in **Firebase Firestore** (no hardcoded data).
+    *   **Security Rules** are configured for data protection.
 
 ---
 
-## 🛠️ Технології
+## 🛠️ Tech Stack
 
-- **Flutter** 3.35.4
-- **Dart** 3.9.2
-- **Firebase Auth** - аутентифікація
-- **Cloud Firestore** - база даних
-- **Firebase Storage** - зберігання файлів
-- **Riverpod** - state management
-- **Image Picker** - вибір фото
+*   **Framework:** Flutter 3.35.4
+*   **Language:** Dart 3.9.2
+*   **State Management:** Riverpod
+*   **Backend:**
+    *   **Firebase Auth:** User authentication.
+    *   **Cloud Firestore:** Real-time database.
+    *   **Firebase Storage:** File/Image storage.
+*   **Plugins:** Image Picker (for profile photos).
 
 ---
 
-## 📋 Швидке встановлення
+## 📋 Installation
+
+Follow these steps to set up the project locally:
 
 ```bash
-# 1. Встановити залежності
+# 1. Install dependencies
 flutter pub get
 
-# 2. Запустити
+# 2. Run the application
 flutter run
 ```
 
-**Детальні інструкції:** [START_HERE.md](START_HERE.md)
-
 ---
 
-## 🔥 Firebase Налаштування
 
-Перед запуском необхідно:
-1. ✅ Увімкнути Firebase Storage
-2. ✅ Налаштувати Security Rules
-3. ✅ Опублікувати правила
+## 📱 Project Structure
 
-**Детальна інструкція:** [FIREBASE_STORAGE_SETUP.md](FIREBASE_STORAGE_SETUP.md)
-
----
-
-## 📱 Структура проекту
-
-```
+```text
 lib/
 ├── main.dart
 └── src/
     ├── common/
     │   ├── services/
-    │   │   └── storage_service.dart    # Завантаження фото
+    │   │   └── storage_service.dart    # Image upload logic
     │   ├── providers/
     │   └── widgets/
     ├── features/
-    │   ├── auth/                        # Аутентифікація
-    │   ├── notes/                       # Нотатки (CRUD)
-    │   ├── tags/                        # Теги (CRUD)
-    │   └── settings/                    # Налаштування профілю
+    │   ├── auth/                       # Authentication logic & UI
+    │   ├── notes/                      # Notes CRUD
+    │   ├── tags/                       # Tags CRUD
+    │   └── settings/                   # Profile settings
     └── ...
 ```
 
 ---
 
-## 🧪 Тестування
-
-### Базові тести
-- [ ] Створення акаунту з ім'ям
-- [ ] Редагування імені в Settings
-- [ ] Завантаження фото профілю
-- [ ] Stay logged in (Remember me)
-- [ ] Створення/редагування/видалення нотаток
-- [ ] Створення/видалення тегів
-- [ ] Пошук нотаток
-- [ ] Фільтрація по тегам
-
-**Детальний чеклист:** [START_HERE.md](START_HERE.md)
-
----
-
-## 📚 Документація
-
-- **START_HERE.md** - Головна інструкція
-- **FIREBASE_STORAGE_SETUP.md** - Налаштування Storage
-- **DELETE_TEMP_FILES.md** - Очищення проекту
-
----
-
-## 👨‍💻 Розробка
+## 👨‍💻 Development Commands
 
 ```bash
-# Перевірка на помилки
+# Analyze code for errors and linting issues
 flutter analyze
 
-# Очистка проекту
+# Clean project build files
 flutter clean
 flutter pub get
 
-# Запуск з детальними логами
+# Run with verbose logging for debugging
 flutter run --verbose
 ```
 
 ---
-
-## 🎯 Firebase Console
-
-- **Project:** https://console.firebase.google.com/project/ideanest-2026
-- **Firestore:** https://console.firebase.google.com/project/ideanest-2026/firestore
-- **Storage:** https://console.firebase.google.com/project/ideanest-2026/storage
-- **Auth:** https://console.firebase.google.com/project/ideanest-2026/authentication
-
----
-
-## ✅ Готовність
-
-Проект повністю імплементований та готовий до:
-- ✅ Тестування
-- ✅ Демонстрації
-- ✅ Здачі лабораторної роботи
-
----
-
-## 📄 Ліцензія
-
-Створено для навчальних цілей - Лабораторна робота, Кросплатформне програмування
-
----
-
-**Останнє оновлення:** 5 грудня 2024
